@@ -1,0 +1,60 @@
+#!/bin/sh
+
+echo "Starting rcS..."
+
+echo "++ Mounting filesystem"
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t tmpfs none /tmp
+mount -t debugfs none /sys/kernel/debug
+
+echo "++ Setting up mdev"
+
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+mdev -s
+
+mkdir -p /dev/pts
+mkdir -p /dev/i2c
+mount -t devpts devpts /dev/pts
+
+echo "++ Configure static IP 192.168.0.110"
+ifconfig eth0 down
+ifconfig eth0 192.168.0.110 up
+
+echo "++ Starting telnet daemon"
+telnetd -l /bin/sh
+
+echo "++ Starting http daemon"
+httpd -h /var/www
+
+echo "++ Starting ftp daemon"
+tcpsvd 0:21 ftpd ftpd -w /&
+
+echo "++ Starting dropbear (ssh) daemon"
+dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key
+# add new user for zhangbo
+#echo "++ Add user:zhangbo"
+#mkdir -p /home/zhangbo
+#adduser zhangbo
+dropbear
+#echo "++ Starting OLED Display"
+#load_oled
+
+#echo "++ Exporting LEDs & SWs"
+#for i in 0 1 2 3 4 5 6 7;
+#do
+#       sw=$(($i+69));
+#       led=$(($i+61));
+#       echo $sw > /sys/class/gpio/export;
+#       echo $led > /sys/class/gpio/export;
+#       echo out > /sys/class/gpio/gpio$led/direction;
+#done;
+
+export PATH=$PATH:/usr/local/bin
+
+echo "rcS Complete for zynq-zed board"
+
+echo "try to mount /dev/mmcblk0p2 to /mnt and chroot to /mnt"
+mount -t ext4 /dev/mmcblk0p2 /mnt
+chroot /mnt /bin/bash
