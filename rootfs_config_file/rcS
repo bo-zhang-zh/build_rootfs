@@ -24,8 +24,10 @@ ifconfig eth0 192.168.0.110 up
 echo "++ Starting telnet daemon"
 telnetd -l /bin/sh
 
-echo "++ Starting http daemon"
-httpd -h /var/www
+#echo "++ Starting http daemon"
+#httpd -h /var/www
+echo "++ Starting Boa WebServer"
+boa &
 
 echo "++ Starting ftp daemon"
 tcpsvd 0:21 ftpd ftpd -w /&

@@ -9,17 +9,45 @@ export COMPILER_SYSROOT=/opt/Xilinx/SDK/2018.1/gnu/aarch32/lin/gcc-arm-linux-gnu
 
 current_dir=$(cd `dirname $0`; pwd);
 
+export HOST_INCLUDE_DIR=$current_dir/host_build_include
 export INSTALL_ROOTFS_DIR=$current_dir/_rootfs
 export INIT_CONFIG_DIR=$current_dir/rootfs_config_file
 
 $current_dir/cp_compiler_lib.sh
 $INIT_CONFIG_DIR/cp_file_to_rootfs.sh
 
+cd $current_dir
+if [ -d $current_dir/busybox ]; then
+    git remote update
+else
+    git clone https://git.busybox.net/busybox
+fi
 cd $current_dir/busybox
 $current_dir/build_busybox.sh
 
+cd $current_dir
+if [ -d $current_dir/dropbear ]; then
+    git remote update
+else
+    git clone https://github.com/mkj/dropbear.git
+fi
 cd $current_dir/dropbear
 $current_dir/build_dropbear.sh
+
+# https://github.com/bo-zhang-zh/boa.git
+if [ -d $current_dir/boa ]; then
+    cd $current_dir/boa
+    $current_dir/build_boa.sh
+fi
+
+# https://github.com/bo-zhang-zh/jpeg-lib.git
+cd $current_dir/jpeg-9c
+$current_dir/build_jpeg.sh
+
+# https://github.com/bo-zhang-zh/mjpg-streamer.git
+cd $current_dir/mjpg-streamer
+$current_dir/build_mjpg-streamer.sh
+
 
 cd $current_dir
 
